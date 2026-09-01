@@ -1,0 +1,5 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/PortfolioPulse.Api/PortfolioPulse.Api.csproj" />
+  </Folder>
+</Solution>
