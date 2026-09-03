@@ -24,6 +24,19 @@ public class AccountsController(PortfolioPulseDbContext dbContext) : ControllerB
         _dbContext.Accounts.Add(account);
         await _dbContext.SaveChangesAsync();
 
-        return CreatedAtAction(nameof(GetAccounts), new { id = account.Id });
+        return CreatedAtAction(nameof(GetAccount), new { id = account.Id }, account);
+    }
+
+    [HttpGet("{id}")]
+    public async Task<ActionResult<Account>> GetAccount(int id)
+    {
+        var account = await _dbContext.Accounts.FindAsync(id);
+
+        if (account is null)
+        {
+            return NotFound();
+        }
+
+        return Ok(account);
     }
 }
