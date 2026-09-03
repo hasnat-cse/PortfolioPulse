@@ -17,4 +17,13 @@ public class AccountsController(PortfolioPulseDbContext dbContext) : ControllerB
         var accounts = await _dbContext.Accounts.ToListAsync();
         return Ok(accounts);
     }
+
+    [HttpPost]
+    public async Task<ActionResult<Account>> CreateAccount(Account account)
+    {
+        _dbContext.Accounts.Add(account);
+        await _dbContext.SaveChangesAsync();
+
+        return CreatedAtAction(nameof(GetAccounts), new { id = account.Id });
+    }
 }
