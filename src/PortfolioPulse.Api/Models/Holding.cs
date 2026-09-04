@@ -1,3 +1,5 @@
+using System.Text.Json.Serialization;
+
 namespace PortfolioPulse.Api.Models;
 
 public class Holding
@@ -8,6 +10,7 @@ public class Holding
     public decimal Quantity { get; set; }
     public decimal AverageCost { get; set; }
     public string Currency { get; set; } = "CAD";
-    
-    public Account Account { get; set; } = null!;
+
+    [JsonIgnore]
+    public Account? Account { get; set; }
 }
