@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using PortfolioPulse.Api.Data;
 
@@ -10,9 +11,11 @@ using PortfolioPulse.Api.Data;
 namespace PortfolioPulse.Api.Migrations
 {
     [DbContext(typeof(PortfolioPulseDbContext))]
-    partial class PortfolioPulseDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260904073746_AddHoldings")]
+    partial class AddHoldings
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
