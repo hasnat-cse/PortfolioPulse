@@ -39,4 +39,22 @@ public class AccountsController(PortfolioPulseDbContext dbContext) : ControllerB
 
         return Ok(account);
     }
+
+    [HttpGet("{id}/holdings")]
+    public async Task<ActionResult<IEnumerable<Holding>>> GetAccountHoldings(int id)
+    {
+        var accountExists = await _dbContext.Accounts
+            .AnyAsync(a => a.Id == id);
+
+        if (!accountExists)
+        {
+            return NotFound();
+        }
+
+        var holdings = await _dbContext.Holdings
+            .Where(h => h.AccountId == id)
+            .ToListAsync();
+
+        return Ok(holdings);
+    }
 }
