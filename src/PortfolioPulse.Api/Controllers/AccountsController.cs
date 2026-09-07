@@ -57,4 +57,51 @@ public class AccountsController(PortfolioPulseDbContext dbContext) : ControllerB
 
         return Ok(holdings);
     }
+
+    [HttpPut("{id}")]
+    public async Task<IActionResult> UpdateAccount(int id, Account account)
+    {
+        if (id != account.Id)
+        {
+            return BadRequest();
+        }
+
+        var existingAccount = await _dbContext.Accounts.FindAsync(id);
+
+        if (existingAccount is null)
+        {
+            return NotFound();
+        }
+
+        existingAccount.Name = account.Name;
+        existingAccount.Brokerage = account.Brokerage;
+        existingAccount.AccountType = account.AccountType;
+        existingAccount.Currency = account.Currency;
+        await _dbContext.SaveChangesAsync();
+
+        return NoContent();
+    }
+
+    [HttpDelete("{id}")]
+    public async Task<IActionResult> DeleteAccount(int id)
+    {
+        var existingAccount = await _dbContext.Accounts.FindAsync(id);
+
+        if (existingAccount is null)
+        {
+            return NotFound();
+        }
+
+        var holdingExists = await _dbContext.Holdings.AnyAsync(h => h.AccountId == id);
+
+        if (holdingExists)
+        {
+            return Conflict("Cannot delete an account that has holdings.");
+        }
+
+        _dbContext.Accounts.Remove(existingAccount);
+        await _dbContext.SaveChangesAsync();
+
+        return NoContent();
+    }
 }
