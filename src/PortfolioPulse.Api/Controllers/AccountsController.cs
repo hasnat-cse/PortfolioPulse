@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using PortfolioPulse.Api.Data;
+using PortfolioPulse.Api.DTOs;
 using PortfolioPulse.Api.Models;
 
 namespace PortfolioPulse.Api.Controllers;
@@ -15,16 +16,28 @@ public class AccountsController(PortfolioPulseDbContext dbContext) : ControllerB
     public async Task<ActionResult<IEnumerable<Account>>> GetAccounts()
     {
         var accounts = await _dbContext.Accounts.ToListAsync();
-        return Ok(accounts);
+
+        return Ok(accounts.Select(a => a.ToDto()));
     }
 
     [HttpPost]
-    public async Task<ActionResult<Account>> CreateAccount(Account account)
+    public async Task<ActionResult<Account>> CreateAccount(CreateAccountRequest request)
     {
+        var account = new Account
+        {
+            Name = request.Name,
+            Brokerage = request.Brokerage,
+            AccountType = request.AccountType,
+            Currency = request.Currency
+        };
+
         _dbContext.Accounts.Add(account);
         await _dbContext.SaveChangesAsync();
 
-        return CreatedAtAction(nameof(GetAccount), new { id = account.Id }, account);
+        return CreatedAtAction(
+            nameof(GetAccount),
+            new { id = account.Id },
+            account.ToDto());
     }
 
     [HttpGet("{id}")]
@@ -37,7 +50,7 @@ public class AccountsController(PortfolioPulseDbContext dbContext) : ControllerB
             return NotFound();
         }
 
-        return Ok(account);
+        return Ok(account.ToDto());
     }
 
     [HttpGet("{id}/holdings")]

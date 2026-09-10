@@ -10,6 +10,5 @@ public class Account
     public string AccountType { get; set; } = string.Empty;
     public string Currency { get; set; } = "CAD";
 
-    [JsonIgnore]
     public ICollection<Holding> Holdings { get; set; } = [];
 }
