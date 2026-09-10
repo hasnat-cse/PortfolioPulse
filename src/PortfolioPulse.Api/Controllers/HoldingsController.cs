@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using PortfolioPulse.Api.Data;
+using PortfolioPulse.Api.DTOs;
 using PortfolioPulse.Api.Models;
 
 namespace PortfolioPulse.Api.Controllers;
@@ -12,15 +13,25 @@ public class HoldingsController(PortfolioPulseDbContext dbContext) : ControllerB
     private readonly PortfolioPulseDbContext _dbContext = dbContext;
 
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<Holding>>> GetHoldings()
+    public async Task<ActionResult<IEnumerable<HoldingDto>>> GetHoldings()
     {
         var holdings = await _dbContext.Holdings.ToListAsync();
-        return Ok(holdings);
+
+        return Ok(holdings.Select(h => h.ToDto()));
     }
 
     [HttpPost]
-    public async Task<ActionResult<Holding>> CreateHolding(Holding holding)
+    public async Task<ActionResult<HoldingDto>> CreateHolding(CreateHoldingRequest request)
     {
+        var holding = new Holding
+        {
+            AccountId = request.AccountId,
+            Symbol = request.Symbol,
+            Quantity = request.Quantity,
+            AverageCost = request.AverageCost,
+            Currency = request.Currency
+        };
+
         var accountExists = await _dbContext.Accounts.AnyAsync(a => a.Id == holding.AccountId);
 
         if (!accountExists)
@@ -31,11 +42,14 @@ public class HoldingsController(PortfolioPulseDbContext dbContext) : ControllerB
         _dbContext.Holdings.Add(holding);
         await _dbContext.SaveChangesAsync();
 
-        return CreatedAtAction(nameof(GetHolding), new { id = holding.Id }, holding);
+        return CreatedAtAction(
+            nameof(GetHolding),
+            new { id = holding.Id },
+            holding.ToDto());
     }
 
     [HttpGet("{id}")]
-    public async Task<ActionResult<Holding>> GetHolding(int id)
+    public async Task<ActionResult<HoldingDto>> GetHolding(int id)
     {
         var holding = await _dbContext.Holdings.FindAsync(id);
 
@@ -44,17 +58,12 @@ public class HoldingsController(PortfolioPulseDbContext dbContext) : ControllerB
             return NotFound();
         }
 
-        return Ok(holding);
+        return Ok(holding.ToDto());
     }
 
     [HttpPut("{id}")]
-    public async Task<IActionResult> UpdateHolding(int id, Holding holding)
+    public async Task<IActionResult> UpdateHolding(int id, UpdateHoldingRequest request)
     {
-        if (id != holding.Id)
-        {
-            return BadRequest();
-        }
-
         var existingHolding = await _dbContext.Holdings.FindAsync(id);
 
         if (existingHolding is null)
@@ -62,10 +71,10 @@ public class HoldingsController(PortfolioPulseDbContext dbContext) : ControllerB
             return NotFound();
         }
 
-        existingHolding.Symbol = holding.Symbol;
-        existingHolding.Quantity = holding.Quantity;
-        existingHolding.AverageCost = holding.AverageCost;
-        existingHolding.Currency = holding.Currency;
+        existingHolding.Symbol = request.Symbol;
+        existingHolding.Quantity = request.Quantity;
+        existingHolding.AverageCost = request.AverageCost;
+        existingHolding.Currency = request.Currency;
         await _dbContext.SaveChangesAsync();
 
         return NoContent();

@@ -13,7 +13,7 @@ public class AccountsController(PortfolioPulseDbContext dbContext) : ControllerB
     private readonly PortfolioPulseDbContext _dbContext = dbContext;
 
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<Account>>> GetAccounts()
+    public async Task<ActionResult<IEnumerable<AccountDto>>> GetAccounts()
     {
         var accounts = await _dbContext.Accounts.ToListAsync();
 
@@ -21,7 +21,7 @@ public class AccountsController(PortfolioPulseDbContext dbContext) : ControllerB
     }
 
     [HttpPost]
-    public async Task<ActionResult<Account>> CreateAccount(CreateAccountRequest request)
+    public async Task<ActionResult<AccountDto>> CreateAccount(CreateAccountRequest request)
     {
         var account = new Account
         {
@@ -41,7 +41,7 @@ public class AccountsController(PortfolioPulseDbContext dbContext) : ControllerB
     }
 
     [HttpGet("{id}")]
-    public async Task<ActionResult<Account>> GetAccount(int id)
+    public async Task<ActionResult<AccountDto>> GetAccount(int id)
     {
         var account = await _dbContext.Accounts.FindAsync(id);
 
@@ -54,7 +54,7 @@ public class AccountsController(PortfolioPulseDbContext dbContext) : ControllerB
     }
 
     [HttpGet("{id}/holdings")]
-    public async Task<ActionResult<IEnumerable<Holding>>> GetAccountHoldings(int id)
+    public async Task<ActionResult<IEnumerable<HoldingDto>>> GetAccountHoldings(int id)
     {
         var accountExists = await _dbContext.Accounts
             .AnyAsync(a => a.Id == id);
@@ -68,17 +68,12 @@ public class AccountsController(PortfolioPulseDbContext dbContext) : ControllerB
             .Where(h => h.AccountId == id)
             .ToListAsync();
 
-        return Ok(holdings);
+        return Ok(holdings.Select(h => h.ToDto()));
     }
 
     [HttpPut("{id}")]
-    public async Task<IActionResult> UpdateAccount(int id, Account account)
+    public async Task<IActionResult> UpdateAccount(int id, UpdateAccountRequest request)
     {
-        if (id != account.Id)
-        {
-            return BadRequest();
-        }
-
         var existingAccount = await _dbContext.Accounts.FindAsync(id);
 
         if (existingAccount is null)
@@ -86,10 +81,10 @@ public class AccountsController(PortfolioPulseDbContext dbContext) : ControllerB
             return NotFound();
         }
 
-        existingAccount.Name = account.Name;
-        existingAccount.Brokerage = account.Brokerage;
-        existingAccount.AccountType = account.AccountType;
-        existingAccount.Currency = account.Currency;
+        existingAccount.Name = request.Name;
+        existingAccount.Brokerage = request.Brokerage;
+        existingAccount.AccountType = request.AccountType;
+        existingAccount.Currency = request.Currency;
         await _dbContext.SaveChangesAsync();
 
         return NoContent();
