@@ -15,9 +15,27 @@ public class HoldingsController(PortfolioPulseDbContext dbContext) : ControllerB
     [HttpGet]
     public async Task<ActionResult<IEnumerable<HoldingDto>>> GetHoldings()
     {
-        var holdings = await _dbContext.Holdings.ToListAsync();
+        var holdings = await _dbContext.Holdings
+            .Select(HoldingMappings.ToDtoExpression)
+            .ToListAsync();
 
-        return Ok(holdings.Select(h => h.ToDto()));
+        return Ok(holdings);
+    }
+
+    [HttpGet("{id}")]
+    public async Task<ActionResult<HoldingDto>> GetHolding(int id)
+    {
+        var holding = await _dbContext.Holdings
+            .Where(h => h.Id == id)
+            .Select(HoldingMappings.ToDtoExpression)
+            .FirstOrDefaultAsync();
+
+        if (holding is null)
+        {
+            return NotFound();
+        }
+
+        return Ok(holding);
     }
 
     [HttpPost]
@@ -46,19 +64,6 @@ public class HoldingsController(PortfolioPulseDbContext dbContext) : ControllerB
             nameof(GetHolding),
             new { id = holding.Id },
             holding.ToDto());
-    }
-
-    [HttpGet("{id}")]
-    public async Task<ActionResult<HoldingDto>> GetHolding(int id)
-    {
-        var holding = await _dbContext.Holdings.FindAsync(id);
-
-        if (holding is null)
-        {
-            return NotFound();
-        }
-
-        return Ok(holding.ToDto());
     }
 
     [HttpPut("{id}")]

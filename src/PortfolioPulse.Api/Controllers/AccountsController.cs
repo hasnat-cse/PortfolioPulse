@@ -15,9 +15,27 @@ public class AccountsController(PortfolioPulseDbContext dbContext) : ControllerB
     [HttpGet]
     public async Task<ActionResult<IEnumerable<AccountDto>>> GetAccounts()
     {
-        var accounts = await _dbContext.Accounts.ToListAsync();
+        var accounts = await _dbContext.Accounts
+            .Select(AccountMappings.ToDtoExpression)
+            .ToListAsync();
 
-        return Ok(accounts.Select(a => a.ToDto()));
+        return Ok(accounts);
+    }
+
+    [HttpGet("{id}")]
+    public async Task<ActionResult<AccountDto>> GetAccount(int id)
+    {
+        var account = await _dbContext.Accounts
+            .Where(a => a.Id == id)
+            .Select(AccountMappings.ToDtoExpression)
+            .FirstOrDefaultAsync();
+
+        if (account is null)
+        {
+            return NotFound();
+        }
+
+        return Ok(account);
     }
 
     [HttpPost]
@@ -38,37 +56,6 @@ public class AccountsController(PortfolioPulseDbContext dbContext) : ControllerB
             nameof(GetAccount),
             new { id = account.Id },
             account.ToDto());
-    }
-
-    [HttpGet("{id}")]
-    public async Task<ActionResult<AccountDto>> GetAccount(int id)
-    {
-        var account = await _dbContext.Accounts.FindAsync(id);
-
-        if (account is null)
-        {
-            return NotFound();
-        }
-
-        return Ok(account.ToDto());
-    }
-
-    [HttpGet("{id}/holdings")]
-    public async Task<ActionResult<IEnumerable<HoldingDto>>> GetAccountHoldings(int id)
-    {
-        var accountExists = await _dbContext.Accounts
-            .AnyAsync(a => a.Id == id);
-
-        if (!accountExists)
-        {
-            return NotFound();
-        }
-
-        var holdings = await _dbContext.Holdings
-            .Where(h => h.AccountId == id)
-            .ToListAsync();
-
-        return Ok(holdings.Select(h => h.ToDto()));
     }
 
     [HttpPut("{id}")]
@@ -111,5 +98,24 @@ public class AccountsController(PortfolioPulseDbContext dbContext) : ControllerB
         await _dbContext.SaveChangesAsync();
 
         return NoContent();
+    }
+
+    [HttpGet("{id}/holdings")]
+    public async Task<ActionResult<IEnumerable<HoldingDto>>> GetAccountHoldings(int id)
+    {
+        var accountExists = await _dbContext.Accounts
+            .AnyAsync(a => a.Id == id);
+
+        if (!accountExists)
+        {
+            return NotFound();
+        }
+
+        var holdings = await _dbContext.Holdings
+            .Where(h => h.AccountId == id)
+            .Select(HoldingMappings.ToDtoExpression)
+            .ToListAsync();
+
+        return Ok(holdings);
     }
 }
