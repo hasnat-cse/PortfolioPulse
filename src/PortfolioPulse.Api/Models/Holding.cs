@@ -11,6 +11,5 @@ public class Holding
     public decimal AverageCost { get; set; }
     public string Currency { get; set; } = "CAD";
 
-    [JsonIgnore]
     public Account? Account { get; set; }
 }

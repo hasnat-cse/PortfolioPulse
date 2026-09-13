@@ -8,7 +8,7 @@ The backend provides APIs for managing investment accounts and holdings, with SQ
 
 ## Current Checkpoint
 
-The backend foundation is complete through the Account service layer.
+The backend service layer is complete for the current Account and Holding functionality.
 
 The application currently has:
 
@@ -19,10 +19,13 @@ The application currently has:
 - Reusable entity-to-DTO mappings
 - EF Core projection expressions
 - Account service layer
+- Holding service layer
 - Thin `AccountsController` using `IAccountService`
+- Thin `HoldingsController` using `IHoldingService`
 - Explicit service result handling for account deletion
+- Dependency injection registrations for both application services
 
-The next milestone is the Holding service layer.
+The next milestone is automated backend testing.
 
 ## Completed Milestones
 
@@ -40,6 +43,10 @@ The next milestone is the Holding service layer.
 - AccountService implementation
 - AccountsController refactored to use AccountService
 - Account deletion business result handling
+- HoldingService implementation
+- HoldingsController refactored to use HoldingService
+- Dependency injection registration for AccountService and HoldingService
+- Holding API behavior retested after service-layer refactoring
 
 ## Current Architecture
 
@@ -81,13 +88,15 @@ Services are responsible for:
 
 The Account service is implemented through `IAccountService` and `AccountService`.
 
+The Holding service is implemented through `IHoldingService` and `HoldingService`.
+
 Account deletion uses an explicit `DeleteAccountResult` value to represent expected outcomes:
 
 - `Deleted`
 - `NotFound`
 - `HasHoldings`
 
-This allows the controller to return appropriate HTTP responses without embedding business rules directly in the controller.
+This allows the controller to return appropriate HTTP responses without embedding the account deletion business rule directly in the controller.
 
 ## Current API Capabilities
 
@@ -109,36 +118,102 @@ This allows the controller to return appropriate HTTP responses without embeddin
 - Update a holding
 - Delete a holding
 - Retrieve holdings associated with a specific account
+- Validate that the referenced account exists when creating a holding
 
 ## Next Milestone
 
-Create `HoldingService` and refactor `HoldingsController` to use it.
+Add automated backend tests for the service and API layers.
 
 Planned sequence:
 
-1. Create `IHoldingService`
-2. Create `HoldingService`
-3. Register `IHoldingService` with dependency injection
-4. Refactor `HoldingsController`
-5. Test all Holding endpoints
-6. Commit the service-layer milestone
+1. Create the backend test project if needed
+2. Add tests for `AccountService`
+3. Add tests for `HoldingService`
+4. Add API/integration tests for important HTTP behaviors
+5. Verify validation and error responses
+6. Run the complete test suite
+7. Commit the automated testing milestone
 
 ## Upcoming Work
 
-After the Holding service layer is complete, likely next areas include:
+After automated testing is established, likely next areas include:
 
+- Consistent error-handling conventions across endpoints
+- ProblemDetails-based API error responses
 - Additional business validation for holdings
 - Portfolio-level calculations and summaries
-- Consistent error-handling conventions across endpoints
-- Automated unit and integration tests
 - API documentation improvements
+- Authentication and security foundation
 - Frontend integration
+
+## Frontend Direction
+
+The frontend is planned after the backend architecture and testing foundation are sufficiently stable.
+
+The initial frontend direction is:
+
+- React Native
+- Expo
+- API integration with the ASP.NET Core backend
+- Account screens
+- Holding screens
+- Portfolio dashboard
+- Portfolio charts and analytics
+
+The frontend should consume the API through DTO-based contracts rather than accessing database entities directly.
+
+## Future Direction
+
+Longer-term functionality may include:
+
+- Questrade account integration
+- Market data integration
+- Current portfolio valuation
+- Performance calculations
+- Portfolio analytics
+- Investment allocation analysis
+- Authentication and authorization
+- React web client
+- Additional portfolio and reporting features
+
+## Development Principles
+
+The project is being developed incrementally with an emphasis on maintainability and modern .NET practices.
+
+Key principles include:
+
+- Keep controllers thin
+- Separate API DTOs from EF Core entities
+- Keep application/business operations in services
+- Use dependency injection
+- Use asynchronous database operations
+- Use reusable entity-to-DTO mappings
+- Use EF Core projection expressions for query endpoints
+- Validate API input
+- Avoid unnecessary entity loading
+- Represent expected business outcomes explicitly where appropriate
+- Add automated tests before the application grows significantly
+- Prefer simple architecture over premature abstraction
+- Make meaningful Git commits at architectural milestones
+- Keep architecture and development documentation updated when meaningful design changes occur
 
 ## Latest Git Checkpoint
 
-The next commit should capture the completed Account service-layer milestone, including:
+The latest architectural milestone includes:
 
 - `IAccountService` and `AccountService`
+- `DeleteAccountResult`
+- `IHoldingService` and `HoldingService`
 - `AccountsController` refactoring
-- Explicit account deletion result handling
+- `HoldingsController` refactoring
+- Dependency injection registrations for both services
+- Account deletion business result handling
 - Architecture and development-status documentation updates
+
+The next Git checkpoint should capture the completed service-layer milestone and documentation updates.
+
+## Current Development Position
+
+The backend has progressed from direct controller-to-`DbContext` access to a service-based architecture.
+
+The next focus is establishing automated tests around this architecture before adding more significant business functionality.
