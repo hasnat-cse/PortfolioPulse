@@ -1,191 +1,144 @@
 # PortfolioPulse Development Status
 
+## Project Overview
+
+PortfolioPulse is an investment portfolio tracking application built with ASP.NET Core and Entity Framework Core.
+
+The backend provides APIs for managing investment accounts and holdings, with SQL Server used for persistence. The project follows a layered architecture that separates HTTP concerns, application/business operations, and data access.
+
 ## Current Checkpoint
 
-**Status:** Backend foundation complete; Service layer is next.
+The backend foundation is complete through the Account service layer.
 
-**Last completed milestone:**
+The application currently has:
 
-- Reusable DTO projection expressions
-- AccountController refactored to use projection expressions
-- HoldingsController refactored to use projection expressions
-- API endpoints tested successfully
-- Changes committed and pushed
+- Account CRUD API
+- Holding CRUD API
+- Account holdings endpoint
+- DTOs and validation
+- Reusable entity-to-DTO mappings
+- EF Core projection expressions
+- Account service layer
+- Thin `AccountsController` using `IAccountService`
+- Explicit service result handling for account deletion
 
-**Last Git checkpoint:**
-
-```text
-Add reusable DTO projection expressions
-```
+The next milestone is the Holding service layer.
 
 ## Completed Milestones
 
-### Project Setup
+- Project and solution setup
+- ASP.NET Core Web API setup
+- Entity Framework Core and SQL Server configuration
+- Portfolio database context
+- Account entity and account CRUD endpoints
+- Holding entity and holding CRUD endpoints
+- Account holdings endpoint
+- Request and response DTOs
+- Model validation
+- Reusable entity-to-DTO mapping extensions
+- EF Core projection expressions for query endpoints
+- AccountService implementation
+- AccountsController refactored to use AccountService
+- Account deletion business result handling
 
-- ASP.NET Core Web API created
-- Git repository initialized
-- `.gitignore` configured
-- SQL Server installed and configured
-- PortfolioPulse database created
+## Current Architecture
 
-### Entity Framework Core
-
-- EF Core configured
-- SQL Server connection configured
-- Initial migrations created
-- Account entity created
-- Holding entity created
-- Holding decimal precision configured
-
-### Account API
-
-- GET all accounts
-- GET account by ID
-- Create account
-- Update account
-- Delete account
-- Get holdings belonging to an account
-- Prevent deletion of accounts containing holdings
-
-### Holding API
-
-- GET all holdings
-- GET holding by ID
-- Create holding
-- Update holding
-- Delete holding
-- Validate that the referenced account exists
-
-### DTO Layer
-
-- AccountDto
-- CreateAccountRequest
-- UpdateAccountRequest
-- HoldingDto
-- CreateHoldingRequest
-- UpdateHoldingRequest
-
-DTOs use C# record types.
-
-### Validation
-
-Account validation:
-
-- Required Name
-- Required Brokerage
-- Required AccountType
-- Maximum string lengths
-- Three-character currency validation
-- Create requests default Currency to CAD
-- Update requests require Currency
-
-Holding validation:
-
-- Symbol length validation
-- Positive Quantity
-- Non-negative AverageCost
-- Three-character currency validation
-- Create requests default Currency to CAD
-- AccountId must be at least 1
-- Referenced Account must exist
-
-### Mapping
-
-Separate mapping classes are used:
-
-- `AccountMappings`
-- `HoldingMappings`
-
-Each provides:
-
-- `ToDto()` for in-memory entities
-- `ToDtoExpression` for EF Core query projection
-
-EF Core GET queries use the reusable projection expressions.
-
-### Testing
-
-- API endpoints tested manually with Postman
-- Validation scenarios tested
-- Build verified with `dotnet build`
-
-## Next Milestone
-
-### Service Layer
-
-Introduce application services to move application/business logic out of controllers.
-
-Planned structure:
+The application uses a layered backend structure:
 
 ```text
+Client
+  |
+  v
 Controller
-    ↓
-Service
-    ↓
-DbContext
-    ↓
+  |
+  v
+Application Service Interface
+  |
+  v
+Application Service
+  |
+  v
+PortfolioPulseDbContext
+  |
+  v
 SQL Server
 ```
 
-First service:
+Controllers remain focused on HTTP responsibilities:
 
-```text
-AccountService
-```
+- Receiving HTTP requests
+- Using ASP.NET Core model validation
+- Calling application services
+- Translating service results into HTTP responses
 
-Then:
+Services are responsible for:
 
-```text
-HoldingService
-```
+- Application and business operations
+- Database access through `PortfolioPulseDbContext`
+- Entity-to-DTO mapping
+- Enforcing application-level business rules
+- Returning explicit results for expected business outcomes where appropriate
 
-## Planned Backend Work
+The Account service is implemented through `IAccountService` and `AccountService`.
 
-1. Create AccountService
-2. Move Account operations into AccountService
-3. Refactor AccountsController
-4. Test AccountService-backed endpoints
-5. Create HoldingService
-6. Move Holding operations into HoldingService
-7. Refactor HoldingsController
-8. Add automated backend tests
-9. Improve error handling
-10. Add authentication/security foundation
+Account deletion uses an explicit `DeleteAccountResult` value to represent expected outcomes:
 
-## Planned Frontend
+- `Deleted`
+- `NotFound`
+- `HasHoldings`
 
-After the backend foundation and service layer are sufficiently stable:
+This allows the controller to return appropriate HTTP responses without embedding business rules directly in the controller.
 
-- React Native
-- Expo
-- Mobile navigation
-- Account screens
-- Holdings screens
-- Portfolio dashboard
-- Charts and analytics
+## Current API Capabilities
 
-Backend and frontend development will eventually proceed in parallel.
+### Accounts
 
-## Long-Term Features
+- Create an account
+- Retrieve all accounts
+- Retrieve an account by ID
+- Update an account
+- Delete an account when it has no holdings
+- Return an appropriate result when an account does not exist
+- Prevent deletion of an account that still has holdings
 
-- Questrade integration
-- Market data
-- Portfolio valuation
-- Performance calculations
-- Charts
-- Portfolio analytics
-- Authentication
-- Potential React web client
+### Holdings
 
-## Development Principles
+- Create a holding
+- Retrieve all holdings
+- Retrieve a holding by ID
+- Update a holding
+- Delete a holding
+- Retrieve holdings associated with a specific account
 
-- Work incrementally
-- Prefer simple architecture
-- Avoid unnecessary abstractions
-- Keep controllers thin
-- Keep DTOs separate from entities
-- Keep mapping separate from DTO definitions
-- Reuse EF Core projection expressions
-- Test each meaningful change
-- Commit at meaningful checkpoints
-- Document important architectural decisions
+## Next Milestone
+
+Create `HoldingService` and refactor `HoldingsController` to use it.
+
+Planned sequence:
+
+1. Create `IHoldingService`
+2. Create `HoldingService`
+3. Register `IHoldingService` with dependency injection
+4. Refactor `HoldingsController`
+5. Test all Holding endpoints
+6. Commit the service-layer milestone
+
+## Upcoming Work
+
+After the Holding service layer is complete, likely next areas include:
+
+- Additional business validation for holdings
+- Portfolio-level calculations and summaries
+- Consistent error-handling conventions across endpoints
+- Automated unit and integration tests
+- API documentation improvements
+- Frontend integration
+
+## Latest Git Checkpoint
+
+The next commit should capture the completed Account service-layer milestone, including:
+
+- `IAccountService` and `AccountService`
+- `AccountsController` refactoring
+- Explicit account deletion result handling
+- Architecture and development-status documentation updates

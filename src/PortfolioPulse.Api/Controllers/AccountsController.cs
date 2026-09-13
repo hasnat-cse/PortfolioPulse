@@ -1,23 +1,17 @@
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using PortfolioPulse.Api.Data;
 using PortfolioPulse.Api.DTOs;
-using PortfolioPulse.Api.Models;
+using PortfolioPulse.Api.Services;
 
 namespace PortfolioPulse.Api.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class AccountsController(PortfolioPulseDbContext dbContext) : ControllerBase
+public class AccountsController(IAccountService accountService) : ControllerBase
 {
-    private readonly PortfolioPulseDbContext _dbContext = dbContext;
-
     [HttpGet]
     public async Task<ActionResult<IEnumerable<AccountDto>>> GetAccounts()
     {
-        var accounts = await _dbContext.Accounts
-            .Select(AccountMappings.ToDtoExpression)
-            .ToListAsync();
+        var accounts = await accountService.GetAccountsAsync();
 
         return Ok(accounts);
     }
@@ -25,10 +19,7 @@ public class AccountsController(PortfolioPulseDbContext dbContext) : ControllerB
     [HttpGet("{id}")]
     public async Task<ActionResult<AccountDto>> GetAccount(int id)
     {
-        var account = await _dbContext.Accounts
-            .Where(a => a.Id == id)
-            .Select(AccountMappings.ToDtoExpression)
-            .FirstOrDefaultAsync();
+        var account = await accountService.GetAccountAsync(id);
 
         if (account is null)
         {
@@ -39,40 +30,28 @@ public class AccountsController(PortfolioPulseDbContext dbContext) : ControllerB
     }
 
     [HttpPost]
-    public async Task<ActionResult<AccountDto>> CreateAccount(CreateAccountRequest request)
+    public async Task<ActionResult<AccountDto>> CreateAccount(
+        CreateAccountRequest request)
     {
-        var account = new Account
-        {
-            Name = request.Name,
-            Brokerage = request.Brokerage,
-            AccountType = request.AccountType,
-            Currency = request.Currency
-        };
-
-        _dbContext.Accounts.Add(account);
-        await _dbContext.SaveChangesAsync();
+        var account = await accountService.CreateAccountAsync(request);
 
         return CreatedAtAction(
             nameof(GetAccount),
             new { id = account.Id },
-            account.ToDto());
+            account);
     }
 
     [HttpPut("{id}")]
-    public async Task<IActionResult> UpdateAccount(int id, UpdateAccountRequest request)
+    public async Task<IActionResult> UpdateAccount(
+        int id,
+        UpdateAccountRequest request)
     {
-        var existingAccount = await _dbContext.Accounts.FindAsync(id);
+        var updated = await accountService.UpdateAccountAsync(id, request);
 
-        if (existingAccount is null)
+        if (!updated)
         {
             return NotFound();
         }
-
-        existingAccount.Name = request.Name;
-        existingAccount.Brokerage = request.Brokerage;
-        existingAccount.AccountType = request.AccountType;
-        existingAccount.Currency = request.Currency;
-        await _dbContext.SaveChangesAsync();
 
         return NoContent();
     }
@@ -80,41 +59,31 @@ public class AccountsController(PortfolioPulseDbContext dbContext) : ControllerB
     [HttpDelete("{id}")]
     public async Task<IActionResult> DeleteAccount(int id)
     {
-        var existingAccount = await _dbContext.Accounts.FindAsync(id);
+        var result = await accountService.DeleteAccountAsync(id);
 
-        if (existingAccount is null)
+        return result switch
         {
-            return NotFound();
-        }
+            DeleteAccountResult.NotFound => NotFound(),
 
-        var holdingExists = await _dbContext.Holdings.AnyAsync(h => h.AccountId == id);
+            DeleteAccountResult.HasHoldings =>
+                Conflict("Cannot delete an account that has holdings."),
 
-        if (holdingExists)
-        {
-            return Conflict("Cannot delete an account that has holdings.");
-        }
+            DeleteAccountResult.Deleted => NoContent(),
 
-        _dbContext.Accounts.Remove(existingAccount);
-        await _dbContext.SaveChangesAsync();
-
-        return NoContent();
+            _ => Problem()
+        };
     }
 
     [HttpGet("{id}/holdings")]
-    public async Task<ActionResult<IEnumerable<HoldingDto>>> GetAccountHoldings(int id)
+    public async Task<ActionResult<IEnumerable<HoldingDto>>> GetAccountHoldings(
+        int id)
     {
-        var accountExists = await _dbContext.Accounts
-            .AnyAsync(a => a.Id == id);
+        var holdings = await accountService.GetAccountHoldingsAsync(id);
 
-        if (!accountExists)
+        if (holdings is null)
         {
             return NotFound();
         }
-
-        var holdings = await _dbContext.Holdings
-            .Where(h => h.AccountId == id)
-            .Select(HoldingMappings.ToDtoExpression)
-            .ToListAsync();
 
         return Ok(holdings);
     }

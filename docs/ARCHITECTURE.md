@@ -2,35 +2,11 @@
 
 ## Overview
 
-PortfolioPulse is a personal investment portfolio analytics application.
+PortfolioPulse is an investment portfolio tracking application built with ASP.NET Core, Entity Framework Core, and SQL Server.
 
-The long-term goal is to provide a cross-platform application that can connect to brokerage data, display investment holdings, and provide portfolio analytics, charts, and insights.
+The backend uses a layered architecture to keep HTTP handling, application/business logic, and database access clearly separated.
 
-The backend is being developed first as an ASP.NET Core Web API.
-
-## Technology Stack
-
-### Backend
-
-- C#
-- ASP.NET Core Web API
-- Entity Framework Core
-- SQL Server
-- REST API
-- OpenAPI
-
-### Planned Frontend
-
-- React Native
-- Expo
-- React
-- Cross-platform mobile application
-
-A React web client may be added later.
-
-## Current Architecture
-
-The application is being developed using a layered approach:
+## High-Level Architecture
 
 ```text
 Client
@@ -39,220 +15,139 @@ Client
 Controller
   |
   v
-Service
+Application Service Interface
   |
   v
-DbContext
+Application Service
+  |
+  v
+PortfolioPulseDbContext
   |
   v
 SQL Server
 ```
 
-The Service layer is the next architectural milestone.
-
-Controllers should primarily handle HTTP concerns, while application and business logic should gradually move into Services.
-
-## Project Structure
+For account operations, this flow is implemented as:
 
 ```text
-PortfolioPulse/
-├── PortfolioPulse.sln
-├── src/
-│   └── PortfolioPulse.Api/
-│       ├── Controllers/
-│       ├── Data/
-│       ├── DTOs/
-│       ├── Models/
-│       └── ...
-├── tests/
-└── docs/
+Client
+  |
+  v
+AccountsController
+  |
+  v
+IAccountService
+  |
+  v
+AccountService
+  |
+  v
+PortfolioPulseDbContext
+  |
+  v
+SQL Server
 ```
 
-## Database
+## Layers and Responsibilities
 
-The application currently uses SQL Server with the database:
+### Controllers
 
-```text
-PortfolioPulse
-```
+Controllers are responsible for HTTP concerns only.
 
-Entity Framework Core is used for database access and migrations.
+Their responsibilities include:
 
-## Current Entities
+- Receiving HTTP requests
+- Using ASP.NET Core model validation
+- Calling application services
+- Translating service results into HTTP responses
+- Returning appropriate status codes and response DTOs
+
+Controllers should not contain database queries, entity mapping logic, or application-level business rules.
+
+### Service Layer
+
+Application and business operations are handled by service classes rather than directly by controllers.
+
+Services are responsible for:
+
+- Application and business operations
+- Database access through `PortfolioPulseDbContext`
+- Entity-to-DTO mapping
+- Enforcing application-level business rules
+- Returning explicit results for expected business outcomes where appropriate
+
+The Account service is implemented through `IAccountService` and `AccountService`.
+
+The Holding service layer is the next planned service-layer milestone.
+
+### Data Access
+
+`PortfolioPulseDbContext` is the application’s Entity Framework Core database context.
+
+It is responsible for:
+
+- Mapping entities to database tables
+- Managing database queries and persistence operations
+- Providing access to account and holding data
+- Applying configured entity relationships and constraints
+
+SQL Server is used as the persistent data store.
+
+## Domain Model
+
+The application currently manages two primary entities:
 
 ### Account
 
-An investment account belongs to a brokerage and contains zero or more holdings.
+An account represents an investment account or portfolio container.
 
-Current properties:
-
-- Id
-- Name
-- Brokerage
-- AccountType
-- Currency
-- Holdings
+Accounts support standard create, read, update, and delete operations.
 
 ### Holding
 
-A holding represents an investment position within an account.
+A holding represents an investment position associated with an account.
 
-Current properties:
+Holdings support standard create, read, update, and delete operations. The API also supports retrieving holdings for a specific account.
 
-- Id
-- AccountId
-- Symbol
-- Quantity
-- AverageCost
-- Currency
+## DTOs and Validation
 
-`Holding.AccountId` is the foreign key to `Account`.
+The API uses request and response DTOs rather than exposing entity classes directly.
 
-Current portfolio market values and prices are intentionally not stored in the database because they will eventually depend on market data.
+DTOs provide:
 
-## DTO Architecture
+- Clear API contracts
+- Input validation
+- Separation between persistence models and API models
+- Controlled response shapes
 
-API requests and responses use DTOs rather than exposing EF Core entities directly.
+ASP.NET Core model validation is used to reject invalid request data before application services perform operations.
 
-DTOs use C# record types.
+## Query Projection and Mapping
 
-Current DTOs include:
+Entity-to-DTO mappings are reusable and are used to keep response construction consistent.
 
-- AccountDto
-- CreateAccountRequest
-- UpdateAccountRequest
-- HoldingDto
-- CreateHoldingRequest
-- UpdateHoldingRequest
+Entity Framework Core projection expressions are used where appropriate so query endpoints can shape results efficiently before data is materialized.
 
-This keeps the API contract separate from the database entity model.
+This approach helps reduce duplication and keeps mapping logic out of controllers.
 
-## Entity-to-DTO Mapping
+## Account Service
 
-Mapping logic is kept separate from DTO definitions.
+`IAccountService` defines the application operations available for account management.
 
-Each mapping class contains:
+`AccountService` contains the implementation of those operations, including:
 
-1. `ToDto()` for entities that are already loaded into memory.
-2. `ToDtoExpression` for EF Core database queries.
+- Creating accounts
+- Retrieving accounts
+- Retrieving an account by ID
+- Updating accounts
+- Deleting accounts
+- Retrieving holdings associated with an account
+- Applying account-related business rules
 
-Example:
+`AccountsController` delegates account operations to this service.
 
-```csharp
-.Select(AccountMappings.ToDtoExpression)
-```
+## Explicit Business Results
 
-The expression allows EF Core to translate the projection into SQL and retrieve only the fields required by the DTO.
+Expected business outcomes are represented by explicit service results where appropriate.
 
-The same pattern is used for Holdings.
-
-## Validation
-
-Request DTOs use DataAnnotations for basic API validation.
-
-Examples:
-
-- Required strings
-- String length restrictions
-- Numeric ranges
-- Three-character currency codes
-- Positive Account IDs
-
-Create requests may provide sensible defaults where appropriate.
-
-For example:
-
-```text
-Currency = "CAD"
-```
-
-Update requests require the currency explicitly.
-
-## Current API Endpoints
-
-### Accounts
-
-```text
-GET    /api/accounts
-GET    /api/accounts/{id}
-POST   /api/accounts
-PUT    /api/accounts/{id}
-DELETE /api/accounts/{id}
-
-GET    /api/accounts/{id}/holdings
-```
-
-### Holdings
-
-```text
-GET    /api/holdings
-GET    /api/holdings/{id}
-POST   /api/holdings
-PUT    /api/holdings/{id}
-DELETE /api/holdings/{id}
-```
-
-## Account Deletion Rule
-
-An account cannot be deleted while it contains holdings.
-
-The API returns:
-
-```text
-409 Conflict
-```
-
-when deletion is attempted for an account that still has holdings.
-
-This prevents accidental deletion of associated investment data.
-
-## Controller Responsibilities
-
-Controllers currently handle:
-
-- HTTP routing
-- HTTP status codes
-- Request/response handling
-- Basic orchestration
-
-GET operations use DTO projection expressions.
-
-Write operations load or create EF Core entities as necessary.
-
-The next architectural improvement is to move application logic out of controllers and into Services.
-
-## Testing
-
-API endpoints are currently tested manually using Postman.
-
-Validation scenarios have been tested for Accounts and Holdings.
-
-Build verification is performed with:
-
-```bash
-dotnet build
-```
-
-Automated backend tests are planned as a future milestone.
-
-## Architectural Direction
-
-The intended direction is:
-
-```text
-Controllers
-    ↓
-Services
-    ↓
-EF Core / DbContext
-    ↓
-SQL Server
-```
-
-DTOs remain the API contract.
-
-Mapping remains separate from DTO definitions.
-
-EF Core projection expressions are reused for database-to-DTO queries.
-
-The architecture should remain simple and avoid introducing unnecessary abstractions until they provide a clear benefit.
+For example, account deletion returns `DeleteAccountResult` values

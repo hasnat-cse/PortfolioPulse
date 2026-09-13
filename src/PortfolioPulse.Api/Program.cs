@@ -1,11 +1,14 @@
 using Microsoft.EntityFrameworkCore;
 using PortfolioPulse.Api.Data;
+using PortfolioPulse.Api.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddDbContext<PortfolioPulseDbContext>(options =>
     options.UseSqlServer(
         builder.Configuration.GetConnectionString("PortfolioPulse")));
+
+builder.Services.AddScoped<IAccountService, AccountService>();
 
 builder.Services.AddControllers();
 
@@ -32,7 +35,7 @@ var summaries = new[]
 
 app.MapGet("/weatherforecast", () =>
 {
-    var forecast =  Enumerable.Range(1, 5).Select(index =>
+    var forecast = Enumerable.Range(1, 5).Select(index =>
         new WeatherForecast
         (
             DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
