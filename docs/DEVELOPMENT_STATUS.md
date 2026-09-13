@@ -8,7 +8,7 @@ The backend provides APIs for managing investment accounts and holdings, with SQ
 
 ## Current Checkpoint
 
-The backend service layer is complete for the current Account and Holding functionality.
+The backend service layer and automated service tests are complete for the current Account and Holding functionality.
 
 The application currently has:
 
@@ -24,8 +24,11 @@ The application currently has:
 - Thin `HoldingsController` using `IHoldingService`
 - Explicit service result handling for account deletion
 - Dependency injection registrations for both application services
+- Automated unit tests for `AccountService`
+- Automated unit tests for `HoldingService`
+- 20 passing service tests
 
-The next milestone is automated backend testing.
+The next milestone is API/integration testing for important HTTP behaviors.
 
 ## Completed Milestones
 
@@ -47,6 +50,11 @@ The next milestone is automated backend testing.
 - HoldingsController refactored to use HoldingService
 - Dependency injection registration for AccountService and HoldingService
 - Holding API behavior retested after service-layer refactoring
+- Backend test project created
+- EF Core InMemory test database configured
+- AccountService automated tests
+- HoldingService automated tests
+- 20 service tests passing
 
 ## Current Architecture
 
@@ -120,23 +128,78 @@ This allows the controller to return appropriate HTTP responses without embeddin
 - Retrieve holdings associated with a specific account
 - Validate that the referenced account exists when creating a holding
 
+## Automated Testing
+
+The service layer has automated unit-test coverage for the current Account and Holding functionality.
+
+Tests are located under:
+
+```text
+tests/
+└── PortfolioPulse.Api.Tests/
+    └── Services/
+        ├── AccountServiceTests.cs
+        └── HoldingServiceTests.cs
+```
+
+The current test suite contains:
+
+- 11 `AccountService` tests
+- 9 `HoldingService` tests
+- 20 tests total
+- 20 tests passing
+- 0 failures
+
+The tests use Entity Framework Core's InMemory provider with a unique database for each test to keep tests isolated.
+
+The tests currently cover:
+
+### AccountService
+
+- Retrieving all accounts
+- Creating accounts
+- Retrieving existing accounts
+- Handling missing accounts
+- Updating existing accounts
+- Handling updates for missing accounts
+- Deleting accounts without holdings
+- Handling deletion of missing accounts
+- Preventing deletion of accounts with holdings
+- Retrieving holdings for existing accounts
+- Handling account-holdings requests for missing accounts
+
+### HoldingService
+
+- Retrieving all holdings
+- Retrieving existing holdings
+- Handling missing holdings
+- Creating holdings for existing accounts
+- Rejecting creation when the referenced account does not exist
+- Updating existing holdings
+- Handling updates for missing holdings
+- Deleting existing holdings
+- Handling deletion of missing holdings
+
+The tests focus on observable service behavior rather than implementation details.
+
 ## Next Milestone
 
-Add automated backend tests for the service and API layers.
+Add API/integration tests for important HTTP behaviors.
 
 Planned sequence:
 
-1. Create the backend test project if needed
-2. Add tests for `AccountService`
-3. Add tests for `HoldingService`
-4. Add API/integration tests for important HTTP behaviors
-5. Verify validation and error responses
-6. Run the complete test suite
-7. Commit the automated testing milestone
+1. Choose the appropriate integration-test approach
+2. Add tests for important Accounts API behaviors
+3. Add tests for important Holdings API behaviors
+4. Verify HTTP status codes and response bodies
+5. Verify model-validation responses
+6. Verify important business-rule responses such as account deletion conflicts
+7. Run the complete test suite
+8. Commit the API/integration testing milestone
 
 ## Upcoming Work
 
-After automated testing is established, likely next areas include:
+After API/integration testing is established, likely next areas include:
 
 - Consistent error-handling conventions across endpoints
 - ProblemDetails-based API error responses
@@ -193,13 +256,13 @@ Key principles include:
 - Avoid unnecessary entity loading
 - Represent expected business outcomes explicitly where appropriate
 - Add automated tests before the application grows significantly
+- Keep architecture and development documentation updated when meaningful design changes occur
 - Prefer simple architecture over premature abstraction
 - Make meaningful Git commits at architectural milestones
-- Keep architecture and development documentation updated when meaningful design changes occur
 
 ## Latest Git Checkpoint
 
-The latest architectural milestone includes:
+The latest completed development milestone includes:
 
 - `IAccountService` and `AccountService`
 - `DeleteAccountResult`
@@ -209,11 +272,17 @@ The latest architectural milestone includes:
 - Dependency injection registrations for both services
 - Account deletion business result handling
 - Architecture and development-status documentation updates
+- Backend test project
+- `AccountServiceTests`
+- `HoldingServiceTests`
+- 20 passing service tests
 
-The next Git checkpoint should capture the completed service-layer milestone and documentation updates.
+The next Git checkpoint should capture the completed automated service-testing milestone and documentation updates.
 
 ## Current Development Position
 
-The backend has progressed from direct controller-to-`DbContext` access to a service-based architecture.
+The backend has progressed from direct controller-to-`DbContext` access to a service-based architecture with automated tests around the service layer.
 
-The next focus is establishing automated tests around this architecture before adding more significant business functionality.
+The Account and Holding services now have automated coverage for their current observable behavior.
+
+The next focus is API/integration testing to verify the application's HTTP layer, including status codes, validation behavior, response contracts, and important business-rule responses.
