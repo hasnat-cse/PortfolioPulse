@@ -8,7 +8,9 @@ The backend provides APIs for managing investment accounts and holdings, with SQ
 
 ## Current Checkpoint
 
-The backend service layer and automated service tests are complete for the current Account and Holding functionality.
+The backend service layer and automated testing foundation are complete for the current Account and Holding functionality.
+
+API/integration testing is now underway. The Accounts API integration tests are complete, covering the important HTTP behaviors for the current account endpoints.
 
 The application currently has:
 
@@ -24,11 +26,14 @@ The application currently has:
 - Thin `HoldingsController` using `IHoldingService`
 - Explicit service result handling for account deletion
 - Dependency injection registrations for both application services
-- Automated unit tests for `AccountService`
-- Automated unit tests for `HoldingService`
-- 20 passing service tests
+- Automated tests for `AccountService`
+- Automated tests for `HoldingService`
+- API/integration test infrastructure using `WebApplicationFactory`
+- SQLite-based database for API/integration tests
+- 12 passing `AccountsController` integration tests
+- 32 passing tests in total
 
-The next milestone is API/integration testing for important HTTP behaviors.
+The next focus is API/integration testing for the Holdings API.
 
 ## Completed Milestones
 
@@ -55,6 +60,12 @@ The next milestone is API/integration testing for important HTTP behaviors.
 - AccountService automated tests
 - HoldingService automated tests
 - 20 service tests passing
+- API/integration test infrastructure created
+- SQLite configured for API/integration tests
+- Custom `WebApplicationFactory` created for API/integration testing
+- Per-test database isolation established for API integration tests
+- AccountsController integration tests
+- 32 tests passing
 
 ## Current Architecture
 
@@ -130,9 +141,14 @@ This allows the controller to return appropriate HTTP responses without embeddin
 
 ## Automated Testing
 
-The service layer has automated unit-test coverage for the current Account and Holding functionality.
+The project currently has automated tests at two levels:
 
-Tests are located under:
+1. Service-layer tests
+2. API/integration tests
+
+### Service Tests
+
+Service tests are located under:
 
 ```text
 tests/
@@ -142,7 +158,7 @@ tests/
         └── HoldingServiceTests.cs
 ```
 
-The current test suite contains:
+The service-test suite contains:
 
 - 11 `AccountService` tests
 - 9 `HoldingService` tests
@@ -182,20 +198,83 @@ The tests currently cover:
 
 The tests focus on observable service behavior rather than implementation details.
 
+### API/Integration Tests
+
+API/integration tests are located under:
+
+```text
+tests/
+└── PortfolioPulse.Api.Tests/
+    ├── Controllers/
+    │   └── AccountsControllerTests.cs
+    └── Infrastructure/
+        └── CustomWebApplicationFactory.cs
+```
+
+The API/integration tests use ASP.NET Core's `WebApplicationFactory` to exercise the application through its HTTP pipeline.
+
+SQLite is used as the database provider for the Testing environment. Each test creates its own `CustomWebApplicationFactory`, which provides an isolated in-memory SQLite database.
+
+The normal application continues to use SQL Server.
+
+The current API/integration test suite contains:
+
+- 12 `AccountsController` tests
+- 12 API/integration tests total
+- 32 tests across the entire project
+- 32 tests passing
+- 0 failures
+
+The Accounts API tests currently cover:
+
+- `GET /api/accounts` returning accounts
+- `GET /api/accounts/{id}` for an existing account
+- `GET /api/accounts/{id}` for a missing account
+- `POST /api/accounts` with valid data
+- `POST /api/accounts` with invalid data
+- `PUT /api/accounts/{id}` for an existing account
+- `PUT /api/accounts/{id}` for a missing account
+- `DELETE /api/accounts/{id}` for an account without holdings
+- `DELETE /api/accounts/{id}` for a missing account
+- `DELETE /api/accounts/{id}` when the account has holdings
+- `GET /api/accounts/{id}/holdings` for an existing account
+- `GET /api/accounts/{id}/holdings` for a missing account
+
+The integration tests verify HTTP status codes, response bodies, validation behavior, resource-location behavior for creation, and important account business-rule responses.
+
+## Integration Test Database Strategy
+
+The application uses different database providers depending on the environment:
+
+```text
+Development / Production
+        |
+        v
+    SQL Server
+
+Testing
+        |
+        v
+      SQLite
+```
+
+SQLite is used for API/integration tests because it provides relational database behavior while remaining lightweight and self-contained.
+
+The service tests continue to use EF Core InMemory because those tests focus on service behavior and benefit from the simplicity and speed of the InMemory provider.
+
 ## Next Milestone
 
-Add API/integration tests for important HTTP behaviors.
+Continue API/integration testing for the Holdings API.
 
 Planned sequence:
 
-1. Choose the appropriate integration-test approach
-2. Add tests for important Accounts API behaviors
-3. Add tests for important Holdings API behaviors
-4. Verify HTTP status codes and response bodies
-5. Verify model-validation responses
-6. Verify important business-rule responses such as account deletion conflicts
-7. Run the complete test suite
-8. Commit the API/integration testing milestone
+1. Add tests for important `HoldingsController` behaviors
+2. Verify HTTP status codes and response bodies
+3. Verify model-validation responses
+4. Verify behavior when creating a holding for a nonexistent account
+5. Run the complete test suite
+6. Review the integration-test coverage
+7. Commit the completed API/integration testing milestone
 
 ## Upcoming Work
 
@@ -256,6 +335,7 @@ Key principles include:
 - Avoid unnecessary entity loading
 - Represent expected business outcomes explicitly where appropriate
 - Add automated tests before the application grows significantly
+- Use appropriate test-database strategies for different test levels
 - Keep architecture and development documentation updated when meaningful design changes occur
 - Prefer simple architecture over premature abstraction
 - Make meaningful Git commits at architectural milestones
@@ -275,14 +355,20 @@ The latest completed development milestone includes:
 - Backend test project
 - `AccountServiceTests`
 - `HoldingServiceTests`
-- 20 passing service tests
+- API/integration test infrastructure
+- SQLite testing configuration
+- `CustomWebApplicationFactory`
+- `AccountsControllerTests`
+- 32 passing tests
 
-The next Git checkpoint should capture the completed automated service-testing milestone and documentation updates.
+The next Git checkpoint should capture the completed Accounts API integration-testing milestone and the corresponding development-status documentation update.
 
 ## Current Development Position
 
-The backend has progressed from direct controller-to-`DbContext` access to a service-based architecture with automated tests around the service layer.
+The backend has progressed from direct controller-to-`DbContext` access to a service-based architecture with automated tests around the service layer and HTTP integration tests.
 
-The Account and Holding services now have automated coverage for their current observable behavior.
+The Account and Holding services have automated coverage for their current observable behavior.
 
-The next focus is API/integration testing to verify the application's HTTP layer, including status codes, validation behavior, response contracts, and important business-rule responses.
+The Accounts API now also has integration-test coverage for its current HTTP behavior, including status codes, validation behavior, response contracts, resource-location behavior, and account deletion business rules.
+
+The next focus is API/integration testing for the Holdings API.
