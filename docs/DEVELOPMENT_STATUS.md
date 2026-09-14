@@ -10,7 +10,7 @@ The backend provides APIs for managing investment accounts and holdings, with SQ
 
 The backend service layer and automated testing foundation are complete for the current Account and Holding functionality.
 
-API/integration testing is now underway. The Accounts API integration tests are complete, covering the important HTTP behaviors for the current account endpoints.
+API/integration testing is now complete for the current Accounts and Holdings API functionality. The integration tests exercise the application through the ASP.NET Core HTTP pipeline and verify important HTTP behaviors, validation behavior, response contracts, and business-rule responses.
 
 The application currently has:
 
@@ -31,9 +31,10 @@ The application currently has:
 - API/integration test infrastructure using `WebApplicationFactory`
 - SQLite-based database for API/integration tests
 - 12 passing `AccountsController` integration tests
-- 32 passing tests in total
+- 10 passing `HoldingsController` integration tests
+- 42 passing tests in total
 
-The next focus is API/integration testing for the Holdings API.
+The next focus is reviewing the API behavior and determining the next backend milestone.
 
 ## Completed Milestones
 
@@ -65,7 +66,8 @@ The next focus is API/integration testing for the Holdings API.
 - Custom `WebApplicationFactory` created for API/integration testing
 - Per-test database isolation established for API integration tests
 - AccountsController integration tests
-- 32 tests passing
+- HoldingsController integration tests
+- 42 tests passing
 
 ## Current Architecture
 
@@ -206,7 +208,8 @@ API/integration tests are located under:
 tests/
 └── PortfolioPulse.Api.Tests/
     ├── Controllers/
-    │   └── AccountsControllerTests.cs
+    │   ├── AccountsControllerTests.cs
+    │   └── HoldingsControllerTests.cs
     └── Infrastructure/
         └── CustomWebApplicationFactory.cs
 ```
@@ -220,9 +223,10 @@ The normal application continues to use SQL Server.
 The current API/integration test suite contains:
 
 - 12 `AccountsController` tests
-- 12 API/integration tests total
-- 32 tests across the entire project
-- 32 tests passing
+- 10 `HoldingsController` tests
+- 22 API/integration tests total
+- 42 tests across the entire project
+- 42 tests passing
 - 0 failures
 
 The Accounts API tests currently cover:
@@ -240,7 +244,20 @@ The Accounts API tests currently cover:
 - `GET /api/accounts/{id}/holdings` for an existing account
 - `GET /api/accounts/{id}/holdings` for a missing account
 
-The integration tests verify HTTP status codes, response bodies, validation behavior, resource-location behavior for creation, and important account business-rule responses.
+The Holdings API tests currently cover:
+
+- `GET /api/holdings` returning holdings
+- `GET /api/holdings/{id}` for an existing holding
+- `GET /api/holdings/{id}` for a missing holding
+- `POST /api/holdings` with valid data
+- `POST /api/holdings` when the referenced account does not exist
+- `POST /api/holdings` with invalid data
+- `PUT /api/holdings/{id}` for an existing holding
+- `PUT /api/holdings/{id}` for a missing holding
+- `DELETE /api/holdings/{id}` for an existing holding
+- `DELETE /api/holdings/{id}` for a missing holding
+
+The integration tests verify HTTP status codes, response bodies, validation behavior, resource-location behavior for creation, and important account and holding business-rule responses.
 
 ## Integration Test Database Strategy
 
@@ -264,21 +281,21 @@ The service tests continue to use EF Core InMemory because those tests focus on 
 
 ## Next Milestone
 
-Continue API/integration testing for the Holdings API.
+Review and improve the backend API foundation before moving into larger portfolio functionality.
 
-Planned sequence:
+Potential areas to evaluate:
 
-1. Add tests for important `HoldingsController` behaviors
-2. Verify HTTP status codes and response bodies
-3. Verify model-validation responses
-4. Verify behavior when creating a holding for a nonexistent account
-5. Run the complete test suite
-6. Review the integration-test coverage
+1. Review current API error-handling conventions
+2. Consider ProblemDetails-based error responses
+3. Review validation and business-rule consistency
+4. Identify additional important business validation for holdings
+5. Review API documentation/OpenAPI behavior
+6. Run the complete test suite
 7. Commit the completed API/integration testing milestone
 
 ## Upcoming Work
 
-After API/integration testing is established, likely next areas include:
+After the current API foundation is reviewed, likely next areas include:
 
 - Consistent error-handling conventions across endpoints
 - ProblemDetails-based API error responses
@@ -359,9 +376,10 @@ The latest completed development milestone includes:
 - SQLite testing configuration
 - `CustomWebApplicationFactory`
 - `AccountsControllerTests`
-- 32 passing tests
+- `HoldingsControllerTests`
+- 42 passing tests
 
-The next Git checkpoint should capture the completed Accounts API integration-testing milestone and the corresponding development-status documentation update.
+The next Git checkpoint should capture the completed API/integration testing milestone and the corresponding development-status documentation update.
 
 ## Current Development Position
 
@@ -369,6 +387,8 @@ The backend has progressed from direct controller-to-`DbContext` access to a ser
 
 The Account and Holding services have automated coverage for their current observable behavior.
 
-The Accounts API now also has integration-test coverage for its current HTTP behavior, including status codes, validation behavior, response contracts, resource-location behavior, and account deletion business rules.
+Both the Accounts and Holdings APIs now have integration-test coverage for their current HTTP behavior, including status codes, validation behavior, response contracts, resource-location behavior, and important business-rule responses.
 
-The next focus is API/integration testing for the Holdings API.
+The backend now has a solid testing foundation before moving into more complex portfolio functionality.
+
+The next focus is to review the API foundation and decide on the next backend capability to implement.
