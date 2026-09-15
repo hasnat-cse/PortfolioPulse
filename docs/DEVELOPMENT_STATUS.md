@@ -12,6 +12,8 @@ The backend service layer and automated testing foundation are complete for the 
 
 API/integration testing is now complete for the current Accounts and Holdings API functionality. The integration tests exercise the application through the ASP.NET Core HTTP pipeline and verify important HTTP behaviors, validation behavior, response contracts, and business-rule responses.
 
+API error handling has also been standardized using ASP.NET Core ProblemDetails. Expected business and resource errors now return structured ProblemDetails responses, including 400-level validation/business errors, 404 missing-resource errors, and 409 account-deletion conflicts. Integration tests verify the HTTP status, ProblemDetails content type, title, detail, and validation error structure where applicable.
+
 The application currently has:
 
 - Account CRUD API
@@ -34,7 +36,7 @@ The application currently has:
 - 10 passing `HoldingsController` integration tests
 - 42 passing tests in total
 
-The next focus is reviewing the API behavior and determining the next backend milestone.
+The next focus is completing the API foundation review and then moving into the React web application.
 
 ## Completed Milestones
 
@@ -68,6 +70,8 @@ The next focus is reviewing the API behavior and determining the next backend mi
 - AccountsController integration tests
 - HoldingsController integration tests
 - 42 tests passing
+- Standardized API error responses using ProblemDetails
+- Added integration-test coverage for ProblemDetails responses
 
 ## Current Architecture
 
@@ -285,20 +289,22 @@ Review and improve the backend API foundation before moving into larger portfoli
 
 Potential areas to evaluate:
 
-1. Review current API error-handling conventions
-2. Consider ProblemDetails-based error responses
-3. Review validation and business-rule consistency
-4. Identify additional important business validation for holdings
-5. Review API documentation/OpenAPI behavior
-6. Run the complete test suite
-7. Commit the completed API/integration testing milestone
+1. Review validation and business-rule consistency
+2. Identify additional important business validation for holdings
+3. Review API documentation/OpenAPI behavior
+4. Run the complete test suite
 
 ## Upcoming Work
 
 After the current API foundation is reviewed, likely next areas include:
 
-- Consistent error-handling conventions across endpoints
-- ProblemDetails-based API error responses
+- Additional business validation for holdings
+- API documentation improvements
+- React web application
+- Portfolio dashboard and analytics
+- Authentication and security foundation
+- React Native + Expo mobile application
+- Questrade / market-data integration
 - Additional business validation for holdings
 - Portfolio-level calculations and summaries
 - API documentation improvements
@@ -307,19 +313,31 @@ After the current API foundation is reviewed, likely next areas include:
 
 ## Frontend Direction
 
-The frontend is planned after the backend architecture and testing foundation are sufficiently stable.
+The frontend will begin with a React web application before moving to React Native.
 
-The initial frontend direction is:
+The initial web frontend direction is:
 
-- React Native
-- Expo
+- React
+- TypeScript
 - API integration with the ASP.NET Core backend
 - Account screens
 - Holding screens
 - Portfolio dashboard
 - Portfolio charts and analytics
+- Responsive design
 
-The frontend should consume the API through DTO-based contracts rather than accessing database entities directly.
+The web application will consume the API through DTO-based contracts rather than accessing database entities directly.
+
+After the web application is established, React Native and Expo will be used to build a mobile client against the same ASP.NET Core API.
+
+The intended frontend progression is:
+
+```text
+ASP.NET Core API
+       |
+       +---- React Web
+       |
+       +---- React Native / Expo
 
 ## Future Direction
 
@@ -379,7 +397,7 @@ The latest completed development milestone includes:
 - `HoldingsControllerTests`
 - 42 passing tests
 
-The next Git checkpoint should capture the completed API/integration testing milestone and the corresponding development-status documentation update.
+The latest API/integration testing milestone and ProblemDetails improvements have been committed and pushed. The next Git checkpoint will capture the next meaningful backend or frontend milestone.
 
 ## Current Development Position
 
@@ -391,4 +409,5 @@ Both the Accounts and Holdings APIs now have integration-test coverage for their
 
 The backend now has a solid testing foundation before moving into more complex portfolio functionality.
 
-The next focus is to review the API foundation and decide on the next backend capability to implement.
+The next focus is to complete the remaining API foundation review and then begin the React web application.
+```
