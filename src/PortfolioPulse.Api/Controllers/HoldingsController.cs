@@ -23,7 +23,10 @@ public class HoldingsController(IHoldingService holdingService) : ControllerBase
 
         if (holding is null)
         {
-            return NotFound();
+            return Problem(
+                statusCode: StatusCodes.Status404NotFound,
+                title: "Holding not found",
+                detail: "The specified holding does not exist.");
         }
 
         return Ok(holding);
@@ -37,7 +40,10 @@ public class HoldingsController(IHoldingService holdingService) : ControllerBase
 
         if (holding is null)
         {
-            return BadRequest("The specified account does not exist.");
+            return Problem(
+                statusCode: StatusCodes.Status400BadRequest,
+                title: "Invalid account",
+                detail: "The specified account does not exist.");
         }
 
         return CreatedAtAction(
@@ -55,7 +61,10 @@ public class HoldingsController(IHoldingService holdingService) : ControllerBase
 
         if (!updated)
         {
-            return NotFound();
+            return Problem(
+                statusCode: StatusCodes.Status404NotFound,
+                title: "Holding not found",
+                detail: "The specified holding does not exist.");
         }
 
         return NoContent();
@@ -68,7 +77,10 @@ public class HoldingsController(IHoldingService holdingService) : ControllerBase
 
         if (!deleted)
         {
-            return NotFound();
+            return Problem(
+                statusCode: StatusCodes.Status404NotFound,
+                title: "Holding not found",
+                detail: "The specified holding does not exist.");
         }
 
         return NoContent();

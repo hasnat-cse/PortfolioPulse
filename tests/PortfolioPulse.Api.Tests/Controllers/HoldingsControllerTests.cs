@@ -1,6 +1,6 @@
 using System.Net;
 using System.Net.Http.Json;
-using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 using PortfolioPulse.Api.Data;
 using PortfolioPulse.Api.Models;
@@ -128,7 +128,7 @@ public class HoldingsControllerTests
     }
 
     [Fact]
-    public async Task GetHolding_WhenHoldingDoesNotExist_ReturnsNotFound()
+    public async Task GetHolding_WhenHoldingDoesNotExist_ReturnsNotFoundProblemDetails()
     {
         await using var factory = new CustomWebApplicationFactory();
 
@@ -137,6 +137,20 @@ public class HoldingsControllerTests
         var response = await client.GetAsync("/api/Holdings/999");
 
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+
+        Assert.Equal(
+            "application/problem+json",
+            response.Content.Headers.ContentType?.MediaType);
+
+        var problem = await response.Content
+            .ReadFromJsonAsync<ProblemDetails>();
+
+        Assert.NotNull(problem);
+        Assert.Equal(404, problem.Status);
+        Assert.Equal("Holding not found", problem.Title);
+        Assert.Equal(
+            "The specified holding does not exist.",
+            problem.Detail);
     }
 
     [Fact]
@@ -201,7 +215,7 @@ public class HoldingsControllerTests
     }
 
     [Fact]
-    public async Task CreateHolding_WhenAccountDoesNotExist_ReturnsBadRequest()
+    public async Task CreateHolding_WhenAccountDoesNotExist_ReturnsBadRequestProblemDetails()
     {
         await using var factory = new CustomWebApplicationFactory();
 
@@ -221,10 +235,24 @@ public class HoldingsControllerTests
             request);
 
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+
+        Assert.Equal(
+            "application/problem+json",
+            response.Content.Headers.ContentType?.MediaType);
+
+        var problem = await response.Content
+            .ReadFromJsonAsync<ProblemDetails>();
+
+        Assert.NotNull(problem);
+        Assert.Equal(400, problem.Status);
+        Assert.Equal("Invalid account", problem.Title);
+        Assert.Equal(
+            "The specified account does not exist.",
+            problem.Detail);
     }
 
     [Fact]
-    public async Task CreateHolding_WithInvalidRequest_ReturnsBadRequest()
+    public async Task CreateHolding_WithInvalidRequest_ReturnsBadRequestProblemDetails()
     {
         await using var factory = new CustomWebApplicationFactory();
 
@@ -244,6 +272,18 @@ public class HoldingsControllerTests
             request);
 
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+
+        Assert.Equal(
+            "application/problem+json",
+            response.Content.Headers.ContentType?.MediaType);
+
+        var problem = await response.Content
+            .ReadFromJsonAsync<ValidationProblemDetails>();
+
+        Assert.NotNull(problem);
+        Assert.Equal(400, problem.Status);
+        Assert.NotNull(problem.Errors);
+        Assert.True(problem.Errors.ContainsKey("Symbol"));
     }
 
     [Fact]
@@ -305,7 +345,7 @@ public class HoldingsControllerTests
     }
 
     [Fact]
-    public async Task UpdateHolding_WhenHoldingDoesNotExist_ReturnsNotFound()
+    public async Task UpdateHolding_WhenHoldingDoesNotExist_ReturnsNotFoundProblemDetails()
     {
         await using var factory = new CustomWebApplicationFactory();
 
@@ -324,6 +364,20 @@ public class HoldingsControllerTests
             request);
 
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+
+        Assert.Equal(
+            "application/problem+json",
+            response.Content.Headers.ContentType?.MediaType);
+
+        var problem = await response.Content
+            .ReadFromJsonAsync<ProblemDetails>();
+
+        Assert.NotNull(problem);
+        Assert.Equal(404, problem.Status);
+        Assert.Equal("Holding not found", problem.Title);
+        Assert.Equal(
+            "The specified holding does not exist.",
+            problem.Detail);
     }
 
     [Fact]
@@ -376,7 +430,7 @@ public class HoldingsControllerTests
     }
 
     [Fact]
-    public async Task DeleteHolding_WhenHoldingDoesNotExist_ReturnsNotFound()
+    public async Task DeleteHolding_WhenHoldingDoesNotExist_ReturnsNotFoundProblemDetails()
     {
         await using var factory = new CustomWebApplicationFactory();
 
@@ -385,6 +439,20 @@ public class HoldingsControllerTests
         var response = await client.DeleteAsync("/api/Holdings/999");
 
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+
+        Assert.Equal(
+            "application/problem+json",
+            response.Content.Headers.ContentType?.MediaType);
+
+        var problem = await response.Content
+            .ReadFromJsonAsync<ProblemDetails>();
+
+        Assert.NotNull(problem);
+        Assert.Equal(404, problem.Status);
+        Assert.Equal("Holding not found", problem.Title);
+        Assert.Equal(
+            "The specified holding does not exist.",
+            problem.Detail);
     }
 
     private sealed record HoldingResponse(

@@ -23,7 +23,10 @@ public class AccountsController(IAccountService accountService) : ControllerBase
 
         if (account is null)
         {
-            return NotFound();
+            return Problem(
+                statusCode: StatusCodes.Status404NotFound,
+                title: "Account not found",
+                detail: "The specified account does not exist.");
         }
 
         return Ok(account);
@@ -50,7 +53,10 @@ public class AccountsController(IAccountService accountService) : ControllerBase
 
         if (!updated)
         {
-            return NotFound();
+            return Problem(
+                statusCode: StatusCodes.Status404NotFound,
+                title: "Account not found",
+                detail: "The specified account does not exist.");
         }
 
         return NoContent();
@@ -63,10 +69,17 @@ public class AccountsController(IAccountService accountService) : ControllerBase
 
         return result switch
         {
-            DeleteAccountResult.NotFound => NotFound(),
+            DeleteAccountResult.NotFound =>
+                Problem(
+                    statusCode: StatusCodes.Status404NotFound,
+                    title: "Account not found",
+                    detail: "The specified account does not exist."),
 
             DeleteAccountResult.HasHoldings =>
-                Conflict("Cannot delete an account that has holdings."),
+                Problem(
+                    statusCode: StatusCodes.Status409Conflict,
+                    title: "Account cannot be deleted",
+                    detail: "Cannot delete an account that has holdings."),
 
             DeleteAccountResult.Deleted => NoContent(),
 
@@ -82,7 +95,10 @@ public class AccountsController(IAccountService accountService) : ControllerBase
 
         if (holdings is null)
         {
-            return NotFound();
+            return Problem(
+                statusCode: StatusCodes.Status404NotFound,
+                title: "Account not found",
+                detail: "The specified account does not exist.");
         }
 
         return Ok(holdings);

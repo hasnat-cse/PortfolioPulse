@@ -1,5 +1,6 @@
 using System.Net;
 using System.Net.Http.Json;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 using PortfolioPulse.Api.Data;
 using PortfolioPulse.Api.Models;
@@ -93,7 +94,7 @@ public class AccountsControllerTests
     }
 
     [Fact]
-    public async Task GetAccount_WhenAccountDoesNotExist_ReturnsNotFound()
+    public async Task GetAccount_WhenAccountDoesNotExist_ReturnsNotFoundProblemDetails()
     {
         await using var factory = new CustomWebApplicationFactory();
 
@@ -102,6 +103,20 @@ public class AccountsControllerTests
         var response = await client.GetAsync("/api/accounts/999");
 
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+
+        Assert.Equal(
+            "application/problem+json",
+            response.Content.Headers.ContentType?.MediaType);
+
+        var problem = await response.Content
+            .ReadFromJsonAsync<ProblemDetails>();
+
+        Assert.NotNull(problem);
+        Assert.Equal(404, problem.Status);
+        Assert.Equal("Account not found", problem.Title);
+        Assert.Equal(
+            "The specified account does not exist.",
+            problem.Detail);
     }
 
     [Fact]
@@ -141,7 +156,7 @@ public class AccountsControllerTests
     }
 
     [Fact]
-    public async Task CreateAccount_WithInvalidRequest_ReturnsBadRequest()
+    public async Task CreateAccount_WithInvalidRequest_ReturnsBadRequestProblemDetails()
     {
         await using var factory = new CustomWebApplicationFactory();
 
@@ -160,6 +175,18 @@ public class AccountsControllerTests
             request);
 
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+
+        Assert.Equal(
+            "application/problem+json",
+            response.Content.Headers.ContentType?.MediaType);
+
+        var problem = await response.Content
+            .ReadFromJsonAsync<ValidationProblemDetails>();
+
+        Assert.NotNull(problem);
+        Assert.Equal(400, problem.Status);
+        Assert.NotNull(problem.Errors);
+        Assert.True(problem.Errors.ContainsKey("Name"));
     }
 
     [Fact]
@@ -206,7 +233,7 @@ public class AccountsControllerTests
     }
 
     [Fact]
-    public async Task UpdateAccount_WhenAccountDoesNotExist_ReturnsNotFound()
+    public async Task UpdateAccount_WhenAccountDoesNotExist_ReturnsNotFoundProblemDetails()
     {
         await using var factory = new CustomWebApplicationFactory();
 
@@ -225,6 +252,22 @@ public class AccountsControllerTests
             request);
 
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+
+        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+
+        Assert.Equal(
+            "application/problem+json",
+            response.Content.Headers.ContentType?.MediaType);
+
+        var problem = await response.Content
+            .ReadFromJsonAsync<ProblemDetails>();
+
+        Assert.NotNull(problem);
+        Assert.Equal(404, problem.Status);
+        Assert.Equal("Account not found", problem.Title);
+        Assert.Equal(
+            "The specified account does not exist.",
+            problem.Detail);
     }
 
     [Fact]
@@ -262,7 +305,7 @@ public class AccountsControllerTests
     }
 
     [Fact]
-    public async Task DeleteAccount_WhenAccountDoesNotExist_ReturnsNotFound()
+    public async Task DeleteAccount_WhenAccountDoesNotExist_ReturnsNotFoundProblemDetails()
     {
         await using var factory = new CustomWebApplicationFactory();
 
@@ -271,10 +314,24 @@ public class AccountsControllerTests
         var response = await client.DeleteAsync("/api/accounts/999");
 
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+
+        Assert.Equal(
+            "application/problem+json",
+            response.Content.Headers.ContentType?.MediaType);
+
+        var problem = await response.Content
+            .ReadFromJsonAsync<ProblemDetails>();
+
+        Assert.NotNull(problem);
+        Assert.Equal(404, problem.Status);
+        Assert.Equal("Account not found", problem.Title);
+        Assert.Equal(
+            "The specified account does not exist.",
+            problem.Detail);
     }
 
     [Fact]
-    public async Task DeleteAccount_WhenAccountHasHoldings_ReturnsConflict()
+    public async Task DeleteAccount_WhenAccountHasHoldings_ReturnsConflictProblemDetails()
     {
         await using var factory = new CustomWebApplicationFactory();
 
@@ -316,6 +373,20 @@ public class AccountsControllerTests
             $"/api/accounts/{accountId}");
 
         Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
+
+        Assert.Equal(
+            "application/problem+json",
+            response.Content.Headers.ContentType?.MediaType);
+
+        var problem = await response.Content
+            .ReadFromJsonAsync<ProblemDetails>();
+
+        Assert.NotNull(problem);
+        Assert.Equal(409, problem.Status);
+        Assert.Equal("Account cannot be deleted", problem.Title);
+        Assert.Equal(
+            "Cannot delete an account that has holdings.",
+            problem.Detail);
     }
 
     [Fact]
@@ -394,7 +465,7 @@ public class AccountsControllerTests
     }
 
     [Fact]
-    public async Task GetAccountHoldings_WhenAccountDoesNotExist_ReturnsNotFound()
+    public async Task GetAccountHoldings_WhenAccountDoesNotExist_ReturnsNotFoundProblemDetails()
     {
         await using var factory = new CustomWebApplicationFactory();
 
@@ -404,6 +475,20 @@ public class AccountsControllerTests
             "/api/accounts/999/holdings");
 
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+
+        Assert.Equal(
+            "application/problem+json",
+            response.Content.Headers.ContentType?.MediaType);
+
+        var problem = await response.Content
+            .ReadFromJsonAsync<ProblemDetails>();
+
+        Assert.NotNull(problem);
+        Assert.Equal(404, problem.Status);
+        Assert.Equal("Account not found", problem.Title);
+        Assert.Equal(
+            "The specified account does not exist.",
+            problem.Detail);
     }
 
     private sealed record AccountResponse(
