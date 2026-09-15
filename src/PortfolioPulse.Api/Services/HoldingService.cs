@@ -37,7 +37,7 @@ public sealed class HoldingService(PortfolioPulseDbContext dbContext)
         var holding = new Holding
         {
             AccountId = request.AccountId,
-            Symbol = request.Symbol,
+            Symbol = request.Symbol.Trim(),
             Quantity = request.Quantity,
             AverageCost = request.AverageCost,
             Currency = request.Currency
@@ -61,7 +61,7 @@ public sealed class HoldingService(PortfolioPulseDbContext dbContext)
             return false;
         }
 
-        holding.Symbol = request.Symbol;
+        holding.Symbol = request.Symbol.Trim();
         holding.Quantity = request.Quantity;
         holding.AverageCost = request.AverageCost;
         holding.Currency = request.Currency;

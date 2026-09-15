@@ -215,6 +215,56 @@ public class HoldingsControllerTests
     }
 
     [Fact]
+    public async Task CreateHolding_WithWhitespaceAroundSymbol_TrimsSymbol()
+    {
+        await using var factory = new CustomWebApplicationFactory();
+
+        var client = factory.CreateClient();
+
+        int accountId;
+
+        using (var scope = factory.Services.CreateScope())
+        {
+            var dbContext = scope.ServiceProvider
+                .GetRequiredService<PortfolioPulseDbContext>();
+
+            var account = new Account
+            {
+                Name = "Test Account",
+                Brokerage = "Questrade",
+                AccountType = "TFSA",
+                Currency = "CAD"
+            };
+
+            dbContext.Accounts.Add(account);
+            await dbContext.SaveChangesAsync();
+
+            accountId = account.Id;
+        }
+
+        var request = new
+        {
+            AccountId = accountId,
+            Symbol = " HLAL ",
+            Quantity = 25,
+            AverageCost = 95.42m,
+            Currency = "USD"
+        };
+
+        var response = await client.PostAsJsonAsync(
+            "/api/Holdings",
+            request);
+
+        Assert.Equal(HttpStatusCode.Created, response.StatusCode);
+
+        var holding = await response.Content
+            .ReadFromJsonAsync<HoldingResponse>();
+
+        Assert.NotNull(holding);
+        Assert.Equal("HLAL", holding.Symbol);
+    }
+
+    [Fact]
     public async Task CreateHolding_WhenAccountDoesNotExist_ReturnsBadRequestProblemDetails()
     {
         await using var factory = new CustomWebApplicationFactory();
