@@ -1,0 +1,19 @@
+.holdings-section {
+  margin-top: 2rem;
+}
+
+.holdings-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.holdings-table th,
+.holdings-table td {
+  padding: 0.75rem;
+  text-align: left;
+  border-bottom: 1px solid #ddd;
+}
+
+.holdings-table th {
+  font-weight: bold;
+}

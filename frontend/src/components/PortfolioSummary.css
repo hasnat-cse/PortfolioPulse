@@ -1,0 +1,23 @@
+.summary {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.summary-card {
+  flex: 1;
+  padding: 1.5rem;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+}
+
+.summary-card h3 {
+  margin-top: 0;
+  font-size: 1rem;
+}
+
+.summary-card p {
+  margin-bottom: 0;
+  font-size: 1.5rem;
+  font-weight: bold;
+}
