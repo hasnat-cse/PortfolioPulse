@@ -2,17 +2,21 @@
 
 ## Project Overview
 
-PortfolioPulse is an investment portfolio tracking application built with ASP.NET Core and Entity Framework Core.
+PortfolioPulse is an investment portfolio tracking application built with ASP.NET Core, Entity Framework Core, React, and TypeScript.
 
-The backend provides APIs for managing investment accounts and holdings, with SQL Server used for persistence. The project follows a layered architecture that separates HTTP concerns, application/business operations, and data access.
+The backend provides APIs for managing investment accounts and holdings, with SQL Server used for persistence. The backend follows a layered architecture that separates HTTP concerns, application/business operations, and data access.
+
+The frontend is a React web application that consumes the ASP.NET Core API.
 
 ## Current Checkpoint
 
 The backend service layer and automated testing foundation are complete for the current Account and Holding functionality.
 
-API/integration testing is now complete for the current Accounts and Holdings API functionality. The integration tests exercise the application through the ASP.NET Core HTTP pipeline and verify important HTTP behaviors, validation behavior, response contracts, and business-rule responses.
+API/integration testing is complete for the current Accounts and Holdings API functionality. The integration tests exercise the application through the ASP.NET Core HTTP pipeline and verify important HTTP behaviors, validation behavior, response contracts, and business-rule responses.
 
-API error handling has also been standardized using ASP.NET Core ProblemDetails. Expected business and resource errors now return structured ProblemDetails responses, including 400-level validation/business errors, 404 missing-resource errors, and 409 account-deletion conflicts. Integration tests verify the HTTP status, ProblemDetails content type, title, detail, and validation error structure where applicable.
+API error handling has been standardized using ASP.NET Core ProblemDetails. Expected business and resource errors return structured ProblemDetails responses, including 400-level validation/business errors, 404 missing-resource errors, and 409 account-deletion conflicts. Integration tests verify the HTTP status, ProblemDetails content type, title, detail, and validation error structure where applicable.
+
+The React web frontend has also been established and is now consuming real data from the ASP.NET Core API.
 
 The application currently has:
 
@@ -34,9 +38,21 @@ The application currently has:
 - SQLite-based database for API/integration tests
 - 12 passing `AccountsController` integration tests
 - 10 passing `HoldingsController` integration tests
-- 42 passing tests in total
+- 43 passing tests in total
+- React + TypeScript + Vite frontend
+- React dashboard page
+- Reusable dashboard components
+- React navigation component
+- Portfolio summary component
+- Holdings table
+- Frontend API service for holdings
+- React state management for holdings
+- API data loading with `useEffect`
+- Frontend loading and error states
+- CORS configuration for local React development
+- Mapping from API holding data to frontend UI data
 
-The next focus is completing the API foundation review and then moving into the React web application.
+The next focus is continuing development of the React web application while keeping the existing API foundation stable and tested.
 
 ## Completed Milestones
 
@@ -69,9 +85,24 @@ The next focus is completing the API foundation review and then moving into the 
 - Per-test database isolation established for API integration tests
 - AccountsController integration tests
 - HoldingsController integration tests
-- 42 tests passing
 - Standardized API error responses using ProblemDetails
 - Added integration-test coverage for ProblemDetails responses
+- React + TypeScript + Vite frontend created
+- Initial React application configured
+- Dashboard page created
+- Reusable dashboard components created
+- Navigation component created
+- Portfolio summary component created
+- Holdings table created
+- Responsive dashboard layout established
+- Frontend API type for holdings created
+- Frontend holdings service created
+- React holdings state created
+- React API data loading implemented with `useEffect`
+- Frontend loading state implemented
+- Frontend error state implemented
+- Local development CORS configuration added
+- API holding data mapped to frontend UI data
 
 ## Current Architecture
 
@@ -122,6 +153,37 @@ Account deletion uses an explicit `DeleteAccountResult` value to represent expec
 - `HasHoldings`
 
 This allows the controller to return appropriate HTTP responses without embedding the account deletion business rule directly in the controller.
+
+The frontend currently follows a simple component-based React structure:
+
+```text
+React Application
+      |
+      v
+    App
+      |
+      v
+DashboardPage
+      |
+      +----------------+
+      |                |
+      v                v
+  AppHeader      PortfolioSummary
+      |
+      v
+ Navigation
+      |
+      v
+HoldingsSection
+      |
+      v
+holdingService
+      |
+      v
+ASP.NET Core API
+```
+
+The frontend uses TypeScript types to represent API data and maps API data into UI-specific data structures where appropriate.
 
 ## Current API Capabilities
 
@@ -229,8 +291,8 @@ The current API/integration test suite contains:
 - 12 `AccountsController` tests
 - 10 `HoldingsController` tests
 - 22 API/integration tests total
-- 42 tests across the entire project
-- 42 tests passing
+- 43 tests across the entire project
+- 43 tests passing
 - 0 failures
 
 The Accounts API tests currently cover:
@@ -273,7 +335,12 @@ Development / Production
         v
     SQL Server
 
-Testing
+Service Tests
+        |
+        v
+EF Core InMemory
+
+API / Integration Tests
         |
         v
       SQLite
@@ -283,33 +350,99 @@ SQLite is used for API/integration tests because it provides relational database
 
 The service tests continue to use EF Core InMemory because those tests focus on service behavior and benefit from the simplicity and speed of the InMemory provider.
 
+## Frontend
+
+The frontend is located under:
+
+```text
+frontend/
+├── public/
+├── src/
+│   ├── assets/
+│   ├── components/
+│   ├── pages/
+│   │   └── DashboardPage.tsx
+│   ├── services/
+│   │   └── holdingService.ts
+│   ├── types/
+│   │   └── Holding.ts
+│   ├── App.css
+│   ├── App.tsx
+│   ├── index.css
+│   └── main.tsx
+├── package.json
+├── package-lock.json
+└── vite.config.ts
+```
+
+The frontend currently uses:
+
+- React
+- TypeScript
+- Vite
+- CSS
+- Browser `fetch` for API communication
+
+The dashboard currently contains:
+
+- Application header
+- Navigation
+- Page header
+- Portfolio summary cards
+- Holdings table
+
+The holdings table currently retrieves real holding data from the ASP.NET Core API.
+
+The frontend currently displays:
+
+- Symbol
+- Quantity
+- Average Cost
+
+Current market value is not yet displayed because market-price integration has not been implemented.
+
+The frontend uses a dedicated service for API communication rather than placing HTTP requests directly inside presentation components.
+
+The holdings service currently communicates with:
+
+```text
+GET /api/Holdings
+```
+
+The React component uses `useEffect` to load holdings when the component is initially rendered.
+
+Loading and error states are currently represented using React state.
+
+For local development, the ASP.NET Core API allows requests from the Vite development server origin.
+
 ## Next Milestone
 
-Review and improve the backend API foundation before moving into larger portfolio functionality.
+Continue building the React web dashboard using the existing API foundation.
 
 Potential areas to evaluate:
 
-1. Review validation and business-rule consistency
-2. Identify additional important business validation for holdings
-3. Review API documentation/OpenAPI behavior
-4. Run the complete test suite
+1. Improve the holdings presentation
+2. Add account selection or account-aware holdings
+3. Add portfolio-level calculations using available data
+4. Improve loading and error UI
+5. Add additional frontend API services as needed
+6. Add frontend validation and interaction
+7. Continue testing the frontend/API integration
 
 ## Upcoming Work
 
-After the current API foundation is reviewed, likely next areas include:
+After the React dashboard foundation is established, likely next areas include:
 
 - Additional business validation for holdings
 - API documentation improvements
-- React web application
 - Portfolio dashboard and analytics
+- Portfolio-level calculations and summaries
+- Current market-price integration
 - Authentication and security foundation
 - React Native + Expo mobile application
 - Questrade / market-data integration
-- Additional business validation for holdings
-- Portfolio-level calculations and summaries
-- API documentation improvements
-- Authentication and security foundation
-- Frontend integration
+- Additional portfolio and reporting features
+- Frontend integration improvements
 
 ## Frontend Direction
 
@@ -338,6 +471,7 @@ ASP.NET Core API
        +---- React Web
        |
        +---- React Native / Expo
+```
 
 ## Future Direction
 
@@ -351,11 +485,12 @@ Longer-term functionality may include:
 - Investment allocation analysis
 - Authentication and authorization
 - React web client
+- React Native / Expo mobile client
 - Additional portfolio and reporting features
 
 ## Development Principles
 
-The project is being developed incrementally with an emphasis on maintainability and modern .NET practices.
+The project is being developed incrementally with an emphasis on maintainability and modern .NET and frontend practices.
 
 Key principles include:
 
@@ -371,6 +506,9 @@ Key principles include:
 - Represent expected business outcomes explicitly where appropriate
 - Add automated tests before the application grows significantly
 - Use appropriate test-database strategies for different test levels
+- Keep API and frontend responsibilities separated
+- Keep HTTP communication in frontend service modules
+- Keep UI components focused on presentation and user interaction
 - Keep architecture and development documentation updated when meaningful design changes occur
 - Prefer simple architecture over premature abstraction
 - Make meaningful Git commits at architectural milestones
@@ -386,7 +524,6 @@ The latest completed development milestone includes:
 - `HoldingsController` refactoring
 - Dependency injection registrations for both services
 - Account deletion business result handling
-- Architecture and development-status documentation updates
 - Backend test project
 - `AccountServiceTests`
 - `HoldingServiceTests`
@@ -395,9 +532,18 @@ The latest completed development milestone includes:
 - `CustomWebApplicationFactory`
 - `AccountsControllerTests`
 - `HoldingsControllerTests`
-- 42 passing tests
+- Standardized ProblemDetails error responses
+- 43 passing tests
+- React + TypeScript + Vite frontend
+- React dashboard page
+- Reusable dashboard components
+- Holdings API service
+- React API data loading
+- Loading and error states
+- Local development CORS configuration
+- API-to-UI holding data mapping
 
-The latest API/integration testing milestone and ProblemDetails improvements have been committed and pushed. The next Git checkpoint will capture the next meaningful backend or frontend milestone.
+The next Git checkpoint will capture the completed React holdings API integration milestone.
 
 ## Current Development Position
 
@@ -405,9 +551,12 @@ The backend has progressed from direct controller-to-`DbContext` access to a ser
 
 The Account and Holding services have automated coverage for their current observable behavior.
 
-Both the Accounts and Holdings APIs now have integration-test coverage for their current HTTP behavior, including status codes, validation behavior, response contracts, resource-location behavior, and important business-rule responses.
+Both the Accounts and Holdings APIs have integration-test coverage for their current HTTP behavior, including status codes, validation behavior, response contracts, resource-location behavior, and important business-rule responses.
 
 The backend now has a solid testing foundation before moving into more complex portfolio functionality.
 
-The next focus is to complete the remaining API foundation review and then begin the React web application.
-```
+The React web application has been established and successfully connected to the existing Holdings API.
+
+The current React dashboard can retrieve real holding data from the ASP.NET Core backend and display it with loading and error handling.
+
+The next focus is to continue building the React web dashboard and gradually introduce portfolio calculations, richer UI behavior, and additional API integration.
