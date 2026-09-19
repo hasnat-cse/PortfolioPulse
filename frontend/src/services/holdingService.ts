@@ -11,3 +11,17 @@ export async function getHoldings(): Promise<Holding[]> {
 
   return response.json();
 }
+
+export async function getAccountHoldings(
+  accountId: number,
+): Promise<Holding[]> {
+  const response = await fetch(
+    `${API_BASE_URL}/api/Accounts/${accountId}/Holdings`,
+  );
+
+  if (!response.ok) {
+    throw new Error("Failed to fetch account holdings.");
+  }
+
+  return response.json();
+}

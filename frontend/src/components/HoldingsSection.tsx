@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import "./HoldingsSection.css";
-import { getHoldings } from "../services/holdingService";
+import { getAccountHoldings } from "../services/holdingService";
 
 type HoldingRow = {
   symbol: string;
@@ -8,13 +8,17 @@ type HoldingRow = {
   averageCost: number;
 };
 
-function HoldingsSection() {
+type HoldingsSectionProps = {
+  accountId: number;
+};
+
+function HoldingsSection({ accountId }: HoldingsSectionProps) {
   const [holdings, setHoldings] = useState<HoldingRow[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    getHoldings()
+    getAccountHoldings(accountId)
       .then((data) => {
         setHoldings(
           data.map((holding) => ({

@@ -19,7 +19,7 @@ function DashboardPage() {
         totalReturn={2430.5}
       />
 
-      <HoldingsSection />
+      <HoldingsSection accountId={1} />
     </main>
   );
 }
